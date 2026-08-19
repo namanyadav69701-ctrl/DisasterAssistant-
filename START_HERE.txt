@@ -1,0 +1,57 @@
+DISASTER ASSISTANT — GITHUB APK BUILD
+=====================================
+
+THIS ZIP IS DESIGNED TO BE UPLOADED TO GITHUB.
+YOU DO NOT NEED ANDROID STUDIO.
+
+IMPORTANT: EXTRACT THIS ZIP FIRST.
+
+After extracting, the folder should directly contain:
+
+.github/
+app/
+build.gradle.kts
+gradle.properties
+settings.gradle.kts
+README.md
+START_HERE.txt
+
+GITHUB STEPS
+------------
+1. Open your DisasterAssistant repository.
+2. Remove the old project files if you want a clean replacement.
+3. Click Add file > Upload files.
+4. Drag ALL files and folders from INSIDE this extracted folder.
+   Do not upload the ZIP itself.
+   Do not upload an extra outer folder.
+5. Commit directly to main.
+6. Open the Actions tab.
+7. Open "Build Disaster Assistant APK".
+8. If it did not run automatically, click Run workflow.
+9. Wait for the build.
+
+IF BUILD IS GREEN:
+Download artifact "DisasterAssistant-APK".
+Extract it and install DisasterAssistant.apk on your Android device.
+
+IF BUILD IS RED:
+Download artifact "DisasterAssistant-Build-Log" and send build-log.txt to ChatGPT.
+The workflow is intentionally designed to keep the full Gradle error log.
+
+CURRENT MVP
+-----------
+- Kotlin Android app
+- Jetpack Compose UI
+- Home screen
+- Survival Mode
+- Offline simulation switch
+- Room local emergency protocol database
+- Replaceable LocalAIEngine interface
+- Rule-based LOCAL MOCK classifier
+- No cloud API required
+
+IMPORTANT SAFETY NOTE
+---------------------
+The current emergency protocols are DEMO content and require professional review
+before real-world emergency use. The mock AI does not generate medical procedures;
+it classifies the user's message and the app retrieves stored local protocol content.

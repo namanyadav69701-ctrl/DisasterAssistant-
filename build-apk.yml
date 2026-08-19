@@ -1,0 +1,97 @@
+name: Build Disaster Assistant APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 34
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Show project files
+        shell: bash
+        run: |
+          echo "Repository root: $(pwd)"
+          find . -maxdepth 3 -type f | sort
+
+      - name: Build APK and capture log
+        id: android_build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          gradle --no-daemon :app:assembleDebug --console=plain --stacktrace 2>&1 | tee build-log.txt
+          BUILD_EXIT=${PIPESTATUS[0]}
+          echo "exit_code=$BUILD_EXIT" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Copy APK to simple filename
+        if: always()
+        shell: bash
+        run: |
+          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp app/build/outputs/apk/debug/app-debug.apk DisasterAssistant.apk
+            echo "APK_READY=true" >> "$GITHUB_ENV"
+          else
+            echo "APK_READY=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Upload APK
+        if: env.APK_READY == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DisasterAssistant-APK
+          path: DisasterAssistant.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DisasterAssistant-Build-Log
+          path: build-log.txt
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Finish build
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.android_build.outputs.exit_code }}" != "0" ]; then
+            echo "Android build failed. Download DisasterAssistant-Build-Log from Artifacts."
+            exit 1
+          fi
+          test -f DisasterAssistant.apk
+          echo "Build succeeded. Download DisasterAssistant-APK from Artifacts."
